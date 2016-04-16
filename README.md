@@ -82,3 +82,10 @@ Lists all users. Token is required.
     ]
 }
 ```
+
+## References:
+
+Put this together by studying these great resources:
+
+1. [Authenticate a Node.js API with JSON Web Tokens](https://scotch.io/tutorials/authenticate-a-node-js-api-with-json-web-tokens)
+2. [oauth2-example](https://github.com/mekentosj/oauth2-example)
