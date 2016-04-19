@@ -8,7 +8,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
 var mongoose    = require('mongoose');
-
+var boom = require('express-boom');
 var config = require('./config'); // get our config file
 // =======================
 // configuration =========
@@ -33,7 +33,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(boom());
 
 // use morgan to log requests to the console
 app.use(morgan('dev'));

@@ -6,16 +6,19 @@ var User = require('./../../models/user');
 var router = express.Router();
 
 router.post('/', function (req, res, next) {
-    var body = req.body;
-    User.authenticate(body.email,body.password,function (err, user) {
+    var user = req.body.user;
+    if (!(user && user.password && user.email))
+        res.boom.badRequest('Missing fields');
+
+    User.authenticate(user.email, user.password, function (err, user) {
         if (err)
             res.status(403).json(err);
         else if (!user)
-            res.status(403).json({error: {status: 403, message: "User not found!"}});
+            res.boom.unauthorized();
         else {
             res.json(user);
         }
     });
 
 });
-module.exports=router;
+module.exports = router;

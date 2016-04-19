@@ -5,16 +5,19 @@ var express = require('express');
 var User = require('./../../models/user');
 var router = express.Router();
 
-router.post('/', function (req, res, next) {
-    var body = req.body;
 
-    User.register(body,function (err, user) {
+router.post('/', function (req, res, next) {
+    var user = req.body.user;
+
+    if(!(user && user.firstname && user.password && user.email))
+    res.boom.badRequest('Missing fields');
+    User.register(user,function (err, user) {
         if (err)
             res.status(500).json(err);
         else if (!user)
-            res.status(500).json({error: {status: 403, message: "User not Created!"}});
+            res.boom.badRequest();
         else{
-            res.json({user:user});
+            res.status(201).json({user:user});
         }
     });
 

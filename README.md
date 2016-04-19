@@ -18,10 +18,12 @@ Used to create a new user
 #### Sample Payload:
 ```json
 {
-  "email": "user@example.com",
-  "password":"user@123",
-  "firstname": "user",
-  "lastname": "example"
+    "user":{
+        "email": "user@example.com",
+        "password":"user@123",
+        "firstname": "user",
+        "lastname": "example"
+    }
 }
 ```
 #### Sample Response:
@@ -58,7 +60,7 @@ Used to authenticate user and receive token
         "createdAt": "2016-04-16T17:13:40.979Z",
         "updatedAt": "2016-04-16T17:13:40.979Z"
     },
-    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9"
+    "token": "eyJ0eXAiOiJKV1QiLCJhbG..." //Truncated for brevity
 }
 ```
 

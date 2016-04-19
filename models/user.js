@@ -9,9 +9,9 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var jwt = require('jsonwebtoken'); // used to create, sign, and verify tokens
 var timestamps = require('mongoose-timestamp');
-var Utils=require('./../utils');
+var Utils = require('./../utils');
 //var ValidationError = require('./../errors').ValidationError;
-
+var boom = require('boom');
 
 config = require('./../config'); // get our config file
 // =======================
@@ -19,11 +19,9 @@ config = require('./../config'); // get our config file
 // =======================
 var secret = config.secret;
 
-var OAuthUsersSchema = new Schema({
+var UsersSchema = new Schema({
     email: {type: String, unique: true, required: true},
     hashed_password: {type: String, required: true},
-    //password_reset_token: { type: String, unique: true },
-    //reset_token_expires: Date,
     firstname: String,
     lastname: String
 });
@@ -33,43 +31,40 @@ function hashPassword(password) {
     return bcrypt.hashSync(password, salt);
 }
 
-OAuthUsersSchema.static('register', function (fields, cb) {
+UsersSchema.static('register', function (fields, cb) {
     var user;
 
     fields.hashed_password = hashPassword(fields.password);
     delete fields.password;
     user = new OAuthUsersModel(fields);
     user.save(function (err, user) {
-        if (err || !user) return cb(err, null);
-        return cb(null, Utils.pick(user, ['firstname', 'lastname', 'email', 'createdAt','updatedAt']));
+        if (err || !user) return cb(boom.badRequest('Email already exists. Please login').output.payload, null);
+        return cb(null, Utils.pick(user, ['firstname', 'lastname', 'email', 'createdAt', 'updatedAt']));
 
     });
 });
 
-OAuthUsersSchema.static('getUser', function (email, password, cb) {
-    OAuthUsersModel.authenticate(email, password, function (err, user) {
-        if (err || !user) return cb(err);
-        cb(null, user.email);
-    });
-});
 
-OAuthUsersSchema.static('authenticate', function (email, password, cb) {
+UsersSchema.static('authenticate', function (email, password, cb) {
     this.findOne({email: email}, function (err, user) {
-        if (err || !user) return cb(err);
-        var userProjection = Utils.pick(user, ['firstname', 'lastname', 'email', 'createdAt','updatedAt']);
+        if (err || !user) return cb(boom.unauthorized('Invalid username or password').output.payload);
+        var userProjection = Utils.pick(user, ['firstname', 'lastname', 'email', 'createdAt', 'updatedAt']);
         var token = jwt.sign(userProjection, secret, {
             expiresIn: 1440 * 60// expires in 24 hours
         });
-        cb(null, bcrypt.compareSync(password, user.hashed_password) ? {
-            user: userProjection,
-            token: token
-        } : null);
+        if (bcrypt.compareSync(password, user.hashed_password))
+        return    cb(null, {
+                user: userProjection,
+                token: token
+            });
+
+        cb(boom.unauthorized('Invalid username or password').output.payload);
     });
 });
 
 
-OAuthUsersSchema.plugin(timestamps);
-mongoose.model('users', OAuthUsersSchema);
+UsersSchema.plugin(timestamps);
+mongoose.model('users', UsersSchema);
 
 var OAuthUsersModel = mongoose.model('users');
 module.exports = OAuthUsersModel;
